@@ -1259,9 +1259,9 @@ class ExactConv:
 class Problem:
   """ Problem sizes, strides, padding and other info"""
   def __init__(self, sizes=None, stridesA=None, stridesB=None):
-    self.sizes = sizes
-    self.stridesA = stridesA
-    self.stridesB = stridesB
+    self.sizes = tuple(sizes) if sizes else None
+    self.stridesA = tuple(stridesA) if stridesA else None
+    self.stridesB = tuple(stridesB) if stridesB else None
     self.convConfig = None
 
   def fromExactConv(self, exactConv):

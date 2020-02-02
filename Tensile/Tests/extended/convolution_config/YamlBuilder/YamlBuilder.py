@@ -338,8 +338,8 @@ class YamlBuilder:
 
     @classmethod
     def ProblemSizes(cls, conv, problemType, problemLevel):
-        if conv.spatial:
-            spatialIn = conv.spatial
+        if conv.cc.spatial:
+            spatialIn = conv.cc.spatial
         else:
             spatialIn = [14]*conv.formatNumSpatialDims
 
