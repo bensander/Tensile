@@ -358,35 +358,35 @@ def problemSizeParams(solution, problem):
     numIndices = len(solution.problemType.indices)
     rv = []
 
-    # FIXME-problem, this is hack to set strides which can be replaced by specifying strides with problem
     if problem.stridesA:
-        astrides = problem.stridesA
+        astrides = list(problem.stridesA)
     else:
         astrides = [-1] * solution.problemType.aDims
-        for sc in solution.problemType.setConstStrideA:
-            index = solution.problemType.indices[sc[0]]
-            if type(index) == FreeIndex:
-                assert(index.isA)
-                astrides[index.i] = sc[1]
-            else:
-                astrides[index.a] = sc[1]
+    for sc in solution.problemType.setConstStrideA:
+        index = solution.problemType.indices[sc[0]]
+        if type(index) == FreeIndex:
+            assert(index.isA)
+            astrides[index.i] = sc[1]
+        else:
+            astrides[index.a] = sc[1]
 
     if problem.stridesB:
-      bstrides = problem.stridesB
+      bstrides = list(problem.stridesB)
     else:
       bstrides = [-1] * solution.problemType.bDims
-      for sc in solution.problemType.setConstStrideB:
-          index = solution.problemType.indices[sc[0]]
-          if type(index) == FreeIndex:
-              assert(not index.isA)
-              bstrides[index.i] = sc[1]
-          else:
-              bstrides[index.b] = sc[1]
+    for sc in solution.problemType.setConstStrideB:
+        index = solution.problemType.indices[sc[0]]
+        if type(index) == FreeIndex:
+            assert(not index.isA)
+            bstrides[index.i] = sc[1]
+        else:
+            bstrides[index.b] = sc[1]
 
     if len(problem.sizes) == numIndices:
         None
     elif len(problem.sizes) == numIndices + 4:
-        # FIXME-problem, this is new client format with strides tacked onto sizes
+        # FIXME-problem, this is Exact format with strides tacked onto sizes as 4 extra pams
+        # should just set problem.stride* appropriately when reading the Yaml and not deal with extra fields here
         if astrides[1] == -1:
           astrides[1] = problem.sizes[numIndices+2]
         else:

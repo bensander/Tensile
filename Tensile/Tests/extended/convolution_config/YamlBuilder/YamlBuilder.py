@@ -394,21 +394,25 @@ class YamlBuilder:
 
     @classmethod
     def ConvolutionContraction(cls, conv, problemType, solution, dataType, \
-                                problemFunc, problemLevel=1):
+                                problemFunc, generateConvFormat=True, problemLevel=1):
         """
         Generates a YamlBuilder object that will run a convolution, in normal
         contraction mode.
         """
         doc = cls.Header(debug=False)
 
-        tensileProblemType = {
-            "OperationType": conv.convolutionType,
-            "ConvolutionConfig": [{key:val} for (key,val) in conv.config.items()],
-            "DataType": dataType
-        }
-
-        # don't need this, the convolutionConfig is sufficient
-        tensileProblemType.update(problemType)
+        if generateConvFormat:
+            tensileProblemType = {
+                "OperationType": conv.convolutionType,
+                "ConvolutionConfig": [{key:val} for (key,val) in conv.config.items()],
+                "DataType": dataType
+            }
+        else:
+            tensileProblemType = {
+                "OperationType": "TensorContraction",
+                "DataType": dataType
+            }
+            tensileProblemType.update(problemType)
 
         benchmarkParams = solution()
         for (key,value) in conv.solutionParms.items():
