@@ -1177,29 +1177,30 @@ class ProblemSizeRange:
     return state
 
 class ExactConv:
-  ConvField = namedtuple ("ConvField", ('name', 'default'))
-  AllowedConvFields = { 'n' : ConvField('Batch Count', None),
-                        'c' : ConvField('Channel In', None),
-                        'k' : ConvField('Channel Out',  None),
+  ConvField = namedtuple ("ConvField", ('shortChar', 'descrip', 'default'))
+  AllowedConvFields = [ ConvField('n', 'Batch Count', None),
+                        ConvField('c', 'Channel In', None),
+                        ConvField('k', 'Channel Out',  None),
 
-                        'd' : ConvField('Spatial Depth', -1),
-                        'h' : ConvField('Spatial Height',-1),
-                        'w' : ConvField('Spatial Width', -1),
+                        ConvField('d', 'Spatial Depth', -1),
+                        ConvField('h', 'Spatial Height',-1),
+                        ConvField('w', 'Spatial Width', -1),
 
-                        'z' : ConvField('Filter Z',  -1),
-                        'y' : ConvField('Filter Y',  -1),
-                        'x' : ConvField('Filter X',  -1),
+                        ConvField('z', 'Filter Z',  -1),
+                        ConvField('y', 'Filter Y',  -1),
+                        ConvField('x', 'Filter X',  -1),
 
-                        '#' : ConvField('Stride for Depth', -1),
-                        'u' : ConvField('Stride for Height', -1),
-                        'v' : ConvField('Stride for Width', -1),
+                        ConvField('#', 'Stride for Depth', -1),
+                        ConvField('u', 'Stride for Height', -1),
+                        ConvField('v', 'Stride for Width', -1),
 
-                        '^' : ConvField('Dilation for filter Depth Z', -1),
-                        'l' : ConvField('Dilation for filter Height Y', -1),
-                        'j' : ConvField('Dilation for filter Width X', -1),
+                        ConvField('^', 'Dilation for filter Depth Z', -1),
+                        ConvField('l', 'Dilation for filter Height Y', -1),
+                        ConvField('j', 'Dilation for filter Width X', -1),
 
-                        'g' : ConvField('Group Count',  1),
-                        }
+                        ConvField('g', 'Group Count',  1),
+                        ]
+  AllowedConfFieldsDict = {field.shortChar : field for field in AllowedConvFields}
 
   @staticmethod
   def initParm(e, chars, skipFields):
@@ -1212,16 +1213,17 @@ class ExactConv:
   def __init__(self, e, convolution):
     print ("ExactConv", e)
 
+
     if convolution.formatNumSpatialDims==2:
       skipFields = ('d', 'z', '#', '^')
     else:
       skipFields = ()
 
     for k in e:
-      if k not in ExactConv.AllowedConvFields:
+      if k not in ExactConv.AllowedConfFieldsDict:
         raise RuntimeError ("unknown ExactConv field '%s'"%k)
 
-    for (k,field) in ExactConv.AllowedConvFields.items():
+    for (k,field) in ExactConv.AllowedConfFieldsDict.items():
       if k not in e and k not in skipFields:
         if field.default == None:
           raise RuntimeError ("required ExactConv field '%s' not present in ExactConv:%s"%(k,e))
