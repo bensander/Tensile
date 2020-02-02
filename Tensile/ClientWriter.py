@@ -353,34 +353,6 @@ def checkConstStride(constStrideMap, keyIdx):
   #print ("idx=", keyIdx, "=", finalVal)
   return finalVal
 
-def normalizeConvolution(conv, problemSize, astrides):
-    (refSize,refAStrides) = conv.makeProblem(True, problemSize[conv.dimIdx('N')],
-                                problemSize[conv.dimIdx('C')], problemSize[conv.dimIdx('K')])
-
-    for i in range(len(refSize)):
-      if refSize[i]!=-1:
-        if problemSize[i] == -1:
-          if globalParameters["ProblemFromConvolution"]:
-            problemSize[i] = refSize[i]
-        elif refSize[i] != problemSize[i]:
-          raise RuntimeError (
-            "for problem='%s', ref='%s'. At position %d, exact dim (%d) does not match expected conv dimension (%d) for convChar='%s.'"%\
-              (problemSize, refSize, i, problemSize[i], refSize[i], conv.convolutionChar(i)))
-
-    if globalParameters["ProblemFromConvolution"]:
-      for i in range(len(refAStrides)):
-        if astrides[i]==-1:
-          astrides[i] = refAStrides[i] # copy reference
-        elif refAStrides[i] != -1 and astrides[i] != refAStrides[i]:
-          raise RuntimeError (
-            "at position %d problem strides (%s) don't match reference conv strides(%s)" \
-                          % (i, astrides, refAStrides))
-    elif refAStrides[0] not in (-1,1) or not all(i==-1 for i in refAStrides[1:]):
-        raise RuntimeError (
-            "specified convolution uses strides that can't be represented in current Exact problem size format. Requires StrideA=", refAStrides)
-
-    return (problemSize, astrides)
-
 def problemSizeParams(solution, problem):
 
     numIndices = len(solution.problemType.indices)
@@ -434,8 +406,6 @@ def problemSizeParams(solution, problem):
             "Invalid number of problem type indices: {0} - Indices: {1}, problemSize: {2}".format(len(problemSize.sizes), numIndices,
             ', '.join(map(str, problem.sizes))))
 
-    #if solution.problemType.convolution:
-    #    (problemSize, astrides) = normalizeConvolution(solution.problemType.convolution, list(problemSize), astrides)
     problemSizeArg = ('problem-size', ','.join(map(str, problem.sizes[:numIndices])))
     rv.insert(0, problemSizeArg)
 

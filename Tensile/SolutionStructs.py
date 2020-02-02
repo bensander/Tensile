@@ -515,35 +515,11 @@ class Convolution:
     else:
         return regDim.dim.shortChar
 
-  @property
-  def filterTbd(self):
-    return -1 in self.cc.fil
-
-  @property
-  def strideTbd(self):
-    return -1 in self.cc.stride
-
-  @property
-  def dilationTbd(self):
-    return -1 in self.cc.dilation
-
-  @property
-  def padTbd(self):
-    return -1 in self.cc.padStart or -1 in self.cc.padEnd
-
-
-  def makeProblem(self, keepTbd, n, c, k, pcc):
+  def makeProblem(self, n, c, k, pcc):
     """
     Generate valid problem dims for specified convolution
     pcc is a ConvolutionConfig class with specified values for this problem
     Return [ [sizes],[stridesA] ]
-
-    If keepTbd is true, then makeProblem will compute known values but return -1 for unknowns.
-    For example, a constant filter parm can be used to compute some tensor sizes.  One the other hand,
-    if spatial dims are not specified, then this function cannot compute the associated dimension size
-    or stride and will leave them as -1.
-      - -1 sizes are invalid and should be ignored by caller; however the other sizes can be used as a reference
-      - -1 strides are valid.  (The client will compute a sensible default for -1 strides)
 
     TBD values are assumed to be 1 (filter/dilation/stride) or 0(pad) via abs(..) function
     """
@@ -561,8 +537,6 @@ class Convolution:
     if len(pcc.spatial) != self.formatNumSpatialDims:
       raise RuntimeError ("len(pcc.spatial=", pcc.spatial, ") must match formatNumSpatialDims(%d)"%self.formatNumSpatialDims)
 
-    spatialTbd = -1 in pcc.spatial
-
     # convert any TBD<0 to default 0
     padStart = [0 if p<0 else p for p in self.cc.padStart]
     padEnd   = [0 if p<0 else p for p in self.cc.padEnd]
@@ -570,56 +544,32 @@ class Convolution:
     # convert to Output dimensions:
     spatialOut=[0]*len(pcc.spatial)
     for i in range(self.formatNumSpatialDims):
-      if keepTbd and (spatialTbd or self.filterTbd or self.strideTbd or self.padTbd):
-        spatialTbd = 1
-        spatialOut[i] = -1
-      else:
-        spatialOut[i] = int((pcc.spatial[i] - abs(pcc.fil[i]) + 1 - padStart[i] - padEnd[i]) / abs(pcc.stride[i]))
+      spatialOut[i] = int((pcc.spatial[i] - abs(pcc.fil[i]) + 1 - padStart[i] - padEnd[i]) / abs(pcc.stride[i]))
 
     #import pdb; pdb.set_trace()
     for fi,filterValue in enumerate(pcc.fil):
       if filterValue != -1:
         try:
           pos = self.convolutionDims[chr(ord('X')+fi)].idx
-          if keepTbd and self.filterTbd:
-            sizes[pos] = -1
-          else:
-            sizes[pos] = filterValue
-
-          if keepTbd and (self.dilationTbd or self.strideTbd):
-            astrides[pos] = -1
-          else:
-            astrides[pos] = abs(self.cc.dilation[0]) if fi==0 else pcc.spatial[fi-1]*abs(self.cc.dilation[fi])
+          sizes[pos] = filterValue
+          astrides[pos] = abs(self.cc.dilation[0]) if fi==0 else pcc.spatial[fi-1]*abs(self.cc.dilation[fi])
         except KeyError:
           None
 
     if self.numSpatialDims==1:
       spatialName="DHW"[3-self.formatNumSpatialDims:]
       pos=self.convolutionDims[spatialName].idx
-      if keepTbd and spatialTbd:
-        sizes[pos] = -1
-      else:
-        sizes[pos] = reduce((lambda x, y: x * y), spatialOut) # product of all spatial dimes
-      if keepTbd and self.strideTbd:
-        astrides[pos] = -1
-      else:
-        astrides[pos] = abs(pcc.stride[0])
+      sizes[pos] = reduce((lambda x, y: x * y), spatialOut) # product of all spatial dimes
+      astrides[pos] = abs(pcc.stride[0])
     else:
       for si,sout in enumerate(spatialOut):
         spatialChars=['W','H','D']
         pos = self.convolutionDims[spatialChars[si]].idx
-        if keepTbd and spatialTbd:
-          sizes[pos] = -1
-        else:
-          sizes[pos] = sout
+        sizes[pos] = sout
 
-        if keepTbd and (spatialTbd or self.strideTbd):
-          astrides[pos]=-1
-        else:
-          astrides[pos]=abs(pcc.stride[0]) if si==0 else pcc.spatial[si-1]*abs(pcc.stride[si])
+        astrides[pos]=abs(pcc.stride[0]) if si==0 else pcc.spatial[si-1]*abs(pcc.stride[si])
 
-    if not keepTbd:
-      assert all(i!=-1 for i in sizes)
+    assert all(i!=-1 for i in sizes)
 
     # translate to strides for A tensor in IndexAssignmentsA order:
     orderedStrides=[]
@@ -1289,7 +1239,7 @@ class ExactConv:
     # if possible, copy hard-coded fields from reference conv
     self.convConfig.copyFromRef(convolution.cc)
  
-    (self.sizes,self.stridesA) = convolution.makeProblem(False, e['n'], e['c'], e['k'], self.convConfig)
+    (self.sizes,self.stridesA) = convolution.makeProblem(e['n'], e['c'], e['k'], self.convConfig)
     self.sizes = tuple(self.sizes)
     self.stridesA = tuple(self.stridesA)
 
