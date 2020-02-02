@@ -337,9 +337,9 @@ class Convolution:
 
     # index 0,1,2 = W,H,D = X,Y,Z
     if config.get("Spatial",None):
-      self.spatial  = self.dimxParm(config, "Spatial",-1)
+      self.cc.spatial  = self.dimxParm(config, "Spatial",-1)
     else:
-      self.spatial = None
+      self.cc.spatial = None
     self.cc.fil   = self.dimxParm(config, "Filter",1)
     self.cc.stride   = self.dimxParm(config, "Stride",1)
     self.cc.dilation = self.dimxParm(config, "Dilation",1)
@@ -519,10 +519,11 @@ class Convolution:
   def makeProblem(self, n, c, k, pcc):
     """
     Generate valid problem dims for specified convolution
-    pcc is a ConvolutionConfig class with specified values for this problem
-    Return [ [sizes],[stridesA] ]
+    pcc is a ConvolutionConfig class with specified values for this problem.
+    The function will attempt to initialize TBD values in pcc from the convolution base class,
+    and will then check to ensure the problem is fully specified.
 
-    TBD values are assumed to be 1 (filter/dilation/stride) or 0(pad) via abs(..) function
+    Return [ [sizes],[stridesA] ]
     """
     numDims = 1 + max(max([x[0] for x in self.regDimsA]), max([x[0] for x in self.regDimsB]))
     sizes = [-1]*numDims
@@ -717,8 +718,8 @@ class Convolution:
     id += "_" + self.tensorDFormat
     id += "_spatialDims:" + str(self.numSpatialDims)
     id += "_indices:" + '.'.join([x.dim.shortChar for x in self.indexAssignments])
-    if self.spatial:
-      id += "_spatial:" + "x".join([str(x) for x in self.spatial[::-1]])
+    if self.cc.spatial:
+      id += "_spatial:" + "x".join([str(x) for x in self.cc.spatial[::-1]])
     id += "_filter:" + "x".join([str(x) for x in self.cc.fil[::-1]])
     id += "_stride:" + "x".join([str(x) for x in self.cc.stride[::-1]])
     id += "_dilation:" + "x".join([str(x) for x in self.cc.dilation[::-1]])
@@ -1199,6 +1200,14 @@ class ExactConv:
                         ConvField('l', 'Dilation for filter Height Y', -1),
                         ConvField('j', 'Dilation for filter Width X', -1),
 
+                        ConvField('$', 'Pad for Depth', -1),
+                        ConvField('p', 'Pad for Height', -1),
+                        ConvField('q', 'Pad for WidthX', -1),
+
+                        ConvField('$_', 'Pad End for Depth (overrides $ for end)', -1),
+                        ConvField('p_', 'Pad End for Height (overrides p for end)', -1),
+                        ConvField('q_', 'Pad End for Width (overrides q for end)', -1),
+
                         ConvField('g', 'Group Count',  1),
                         ]
   AllowedConfFieldsDict = {field.shortChar : field for field in AllowedConvFields}
@@ -1239,9 +1248,6 @@ class ExactConv:
                 groupCount = e['g']
               )
 
-    # if possible, copy hard-coded fields from reference conv
-    self.convConfig.copyFromRef(convolution.cc)
- 
     (self.sizes,self.stridesA) = convolution.makeProblem(e['n'], e['c'], e['k'], self.convConfig)
     self.sizes = tuple(self.sizes)
     self.stridesA = tuple(self.stridesA)
