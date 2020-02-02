@@ -1292,9 +1292,10 @@ class ProblemSizes:
             if len(e) == problemType["TotalIndices"]:
               if problemType["OperationType"] == "GEMM":
                 e += [-1, -1, -1, -1]
-              self.exacts.append(Problem(sizes=tuple(e)))
+                e = self.convertLeadingDims(tuple(e))
+              self.exacts.append(Problem(sizes=e))
             elif len(e) == (problemType["TotalIndices"] + problemType["NumIndicesLD"]):
-              self.exacts.append(Problem(sizes=tuple(e)))
+              self.exacts.append(Problem(sizes=self.convertLeadingDims(tuple(e))))
             else:
               printExit("ExactSize %s doesn't match indices of ProblemType %s, totalIndices=%d" \
                   % (e, problemType, problemType["TotalIndices"]) )
@@ -1329,7 +1330,6 @@ class ProblemSizes:
       for i in range(0, len(self.ranges)):
         self.ranges[i].problemSizes[:] = \
           [self.convertLeadingDims(problemSize) for problemSize in self.ranges[i].problemSizes]
-      self.exacts[:] = [Problem(sizes=tuple(self.convertLeadingDims(problemSize))) for problemSize in self.exacts]
 
     self.problems = set()
     for sizeRange in self.ranges:
