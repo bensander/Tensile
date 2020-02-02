@@ -181,7 +181,6 @@ class YamlBuilder:
                 "MergeFiles": True,
                 "KernelTime": True,
                 "SolutionSelectionAlg": 1,
-                "ProblemFromConvolution": True,
                 "NewClient": 2,
                 "DataInitTypeAlpha": 1, # use optimized OptNoLoadLoop, if available
                 "DataInitTypeC": 4, # NANs
@@ -385,7 +384,6 @@ class YamlBuilder:
         """
         obj = cls.ConvolutionContraction(conv, {}, solution, problemFunc=cls.ProblemSizes, problemLevel=1, dataType=dataType)
         obj.doc["GlobalParameters"]["ConvolutionVsContraction"] = 1
-        obj.doc["GlobalParameters"]["ProblemFromConvolution"] = 1
         for problem in obj.doc["BenchmarkProblems"]:
             problem[0]["OperationType"] = conv.convolutionType
             problem[0]["ConvolutionConfig"] = [copy.deepcopy(conv.config)]

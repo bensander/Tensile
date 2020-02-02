@@ -457,6 +457,7 @@ class Convolution:
     problemTypeOut["IndexAssignmentsB"] = [x[0] for x in self.regDimsB]
     problemTypeOut["UseBeta"] = False # MI kernels don't use beta
 
+
     self.solutionParms = {}
 
     stridea=[]
@@ -1290,6 +1291,8 @@ class ProblemSizes:
           elif sizeTypeKey == "Exact":
             e = dictionary[sizeTypeKey]
             if len(e) == problemType["TotalIndices"]:
+              if -1 in e:
+                printExit("ExactSize %s contains -1" % (e))
               if problemType["OperationType"] == "GEMM":
                 e += [-1, -1, -1, -1]
                 e = self.convertLeadingDims(tuple(e))
