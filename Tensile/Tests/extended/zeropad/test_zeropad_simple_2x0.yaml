@@ -13,7 +13,6 @@ GlobalParameters:
   PrintTensorD: 2
   CpuThreads: 0
   NewClient: 2
-  CMakeBuildType: Debug
 
 BenchmarkProblems:
   ########################################

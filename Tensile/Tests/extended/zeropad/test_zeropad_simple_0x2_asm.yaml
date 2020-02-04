@@ -16,7 +16,6 @@ GlobalParameters:
   CpuThreads: 0
   LibraryPrintDebug: 0
   NewClient: 2
-  CMakeBuildType: Debug
 
 BenchmarkProblems:
   ########################################

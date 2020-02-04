@@ -13,13 +13,8 @@ GlobalParameters:
   PrintTensorD: 0
   CpuThreads: 0
   NewClient: 2
-  CMakeBuildType: Debug
-  NewClient: 2
 
 BenchmarkProblems:
-  ########################################
-  # NT - standard
-  ########################################
   -
     - # ProblemType
       OperationType: TensorContraction
@@ -29,7 +24,7 @@ BenchmarkProblems:
       NumIndicesC: 2
       IndexAssignmentsA: [ 0, 2 ]
       IndexAssignmentsB: [ 2, 1 ]
-      ZeroPadA: [ [0, 2,   2, 3] ]  # zero-pad dimension and 2 values, format will change
+      ZeroPadA: [ [0, 2,   2, 3] ]  # zero-pad dimension and 2 values
       SetConstStrideA: [ [2, 1] ]
 
     - # BenchmarkProblemSizeGroup - Standard

@@ -12,14 +12,9 @@ GlobalParameters:
   PrintTensorA: 1
   PrintTensorD: 2
   CpuThreads: 0
-  LibraryPrintDebug: 0
   NewClient: 2
-  CMakeBuildType: Debug
 
 BenchmarkProblems:
-  ########################################
-  # NT - standard
-  ########################################
   -
     - # ProblemType
       OperationType: TensorContraction
