@@ -65,11 +65,26 @@ namespace Tensile
                 const auto sumPos = problem.toBoundsPos(zp.boundIndex);
                 int64_t anchorRelCoord = anchorCoord[zp.anchorPos] * tensor.strides()[zp.anchorPos] +
                                          sumCoord * tensor.strides()[zp.boundPos];
+                int64_t anchorRelCoord2 = anchorCoord[zp.anchorPos] * tensor.strides()[zp.anchorPos] +
+                                         sumCoord * tensor.strides()[zp.boundPos]
+                                         - zp.padStart;
 
                 // size of anchor dim is in the output space, so add filter size-1 to get input spatial dim, then subtract padEnd
-                int64_t elementEdge    = (tensor.sizes().at(zp.anchorPos) + tensor.sizes().at(zp.boundPos) - 1 - zp.padEnd) * tensor.strides()[zp.anchorPos];
-                //std::cout << "i=" << i << " anchorRelCoord="<< anchorRelCoord<< " padStart="<< zp.padStart<< " edge="<< elementEdge<< " padEnd="<< zp.padEnd << "\n";
-                return (anchorRelCoord < zp.padStart || anchorRelCoord >= elementEdge);
+                int64_t elementEdge    = (tensor.sizes().at(zp.anchorPos) + tensor.sizes().at(zp.boundPos) - 1) * tensor.strides()[zp.anchorPos] - zp.padEnd;
+                int64_t elementEdge2    = (tensor.sizes().at(zp.anchorPos) + tensor.sizes().at(zp.boundPos) - 1) * tensor.strides()[zp.anchorPos] - zp.padStart - zp.padEnd;
+
+                bool rv =  (anchorRelCoord < zp.padStart || (anchorRelCoord >= elementEdge));
+                bool rv2 = (anchorRelCoord < 0) || (anchorRelCoord >= elementEdge);
+                std::cout << "  rv=" << rv
+                          << " anchorCoord=" << anchorCoord[zp.anchorPos]
+                          << " sumCoord=" << sumCoord
+                          << " anchorRelCoord="<< anchorRelCoord
+                          << " padStart="<< zp.padStart
+                          << " stride=" << tensor.strides()[zp.anchorPos]
+                          << " edge="<< elementEdge
+                          << " padEnd="<< zp.padEnd << "\n";
+                assert (rv==rv2);
+                return rv;
             } else {
                 return false;
             }
