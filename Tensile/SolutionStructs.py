@@ -2733,7 +2733,6 @@ class Solution:
       reject(state, "packedC1 requires GuaranteeNoPartialB")
 
     if packedC0 or packedC1:
-
       state["_UseSgprForGRO"] = 0
 
       if state["EdgeType"] != "ShiftPtr":
@@ -2754,6 +2753,14 @@ class Solution:
         and state["AssertFree1ElementMultiple"]<state["VectorWidth"]:
           # Not sure if this is actually required??
           reject(state, "packedC1 requires AF1EM>VectorWidth (for stores)")
+
+
+    # Not currently suppored.  Support would require some changes in the
+    # zeroPadRegs management:
+    #   - don't allocate VGPRs for multiple perp/pad cases
+    #   - guardZeroPad needs to add soffset to scalar calc
+    if problemType["ZeroPadA"] or problemType["ZeroPadB"]:
+      state["_UseSgprForGRO"] = 0
 
     # current requirement to avoid buffer loads that span multiple entries
     # if the summation dim participating in the ZeroPad is not fast-moving then
