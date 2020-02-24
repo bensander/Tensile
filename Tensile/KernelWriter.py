@@ -1170,10 +1170,12 @@ class KernelWriter(metaclass=abc.ABCMeta):
     # doShadowInit is required since this pushes up the store SRD initialization before the NLL
     # OptNLL only allowed for single summation index  - for multiple summation we (currently)
     # execute the NLL inside each unroll iteration not just once at the end.
+    # TODO -remove PackBatchDims restriction, this is a bug
     if kernel["PrefetchGlobalRead"] and not kernel["SuppressNoLoadLoop"]:
       if kernel["KernelLanguage"] == "Assembly" and kernel["OptNoLoadLoop"] and \
          kernel["BufferLoad"] and kernel["BufferStore"] and self.doShadowInit and \
          kernel["LocalSplitU"]==1 and kernel["GlobalSplitU"] == 1 and \
+         len(kernel["PackedC0IndicesX"]) == 1 and \
          self.actualSummationLoops==1:
         self.saveLocalPointers(kernel)
         kl += self.noLoadLoop(kernel, tensorParametersA, tensorParametersB, isOptNLL=True)
